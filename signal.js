@@ -28,8 +28,13 @@ io.on("connection", (socket) => {
         io.to(message.id).emit("offer", message);
     });
 
+    socket.on("candidate", (message) => {
+        console.log(message)
+        io.to(message.id).emit("candidate", message);
+    });
+
     socket.on("answer", message => {
-        io.to(message.id).emit("answer", message.answer);
+        io.to(message.id).emit("answer", message);
     });
     
     socket.on("disconnect", () => {

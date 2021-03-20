@@ -33,14 +33,10 @@ io.on("connection", (socket) => {
         io.to(message.id).emit("candidate", message);
     });
 
-    socket.on("createRoom", (room) => {
-        if(!rooms[room.id]){
-            rooms[room.id] = [socket.id];
-            io.sockets.emit("rooms",rooms);
-            socket.emit("roomCreationSuccess");
-        }else{
-            socket.emit("roomCreationError");
-        }
+    socket.on("createRoom", (roomId) => {
+        rooms[roomId] = [socket.id];
+        io.sockets.emit("rooms",rooms);
+        
     });
 
     socket.on("viewRooms", () => {
@@ -48,8 +44,12 @@ io.on("connection", (socket) => {
     });
 
     socket.on("joinRoom", (room) => {
-        socket.emit("joinedRoom", rooms[room.id])
-        rooms[room.id].push(socket.id);
+        console.log(rooms[room])
+        if(rooms[room]){
+            socket.emit("joinedRoom", rooms[room])
+            rooms[room].push(socket.id); 
+        }
+        
     
     });
 
@@ -58,14 +58,20 @@ io.on("connection", (socket) => {
     });
 
     socket.on("leaveRoom", (room) => {
-        rooms[room.id].splice(rooms[room.id].indexOf(socket.id),1);
-        if(rooms[room.id].length === 0){
-            delete rooms[room.id];
-        }else{
-            rooms[room.id].forEach(socketId => {
-                io.to(socketId).emit("thisPeerLeft", socket.id);
-            });
+        if(rooms[room]){
+            console.log(rooms[room])
+            console.log(socket.id)
+            console.log(rooms[room].indexOf(socket.id))
+            rooms[room].splice(rooms[room].indexOf(socket.id),1);
+            if(rooms[room].length === 0){
+                delete rooms[room];
+            }else{
+                rooms[room].forEach(socketId => {
+                    io.to(socketId).emit("thisPeerLeft", socket.id);
+                });
+            }
         }
+        
     });
 
 

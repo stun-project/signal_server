@@ -1,5 +1,6 @@
 const express = require('express');
 const http = require('http');
+const { createConnection } = require('net');
 const app = express();
 const server = http.createServer(app);
 const io = require('socket.io')(server,{
@@ -34,7 +35,7 @@ io.on("connection", (socket) => {
     });
 
     socket.on("createRoom", (roomId) => {
-        rooms[roomId] = [socket.id];
+        rooms[roomId] = [];
         io.sockets.emit("rooms",rooms);
         
     });
@@ -44,13 +45,14 @@ io.on("connection", (socket) => {
     });
 
     socket.on("joinRoom", (room) => {
-        console.log(rooms[room])
+        socket.emit("joinedRoom", rooms[room]);
         if(rooms[room]){
-            socket.emit("joinedRoom", rooms[room])
             rooms[room].push(socket.id); 
         }
-        
-    
+        else{
+            rooms[room] = [socket.id];
+            io.sockets.emit("rooms",rooms);
+        }
     });
 
     socket.on("scout", (roomId, callbackFunc) => {
@@ -58,19 +60,16 @@ io.on("connection", (socket) => {
     });
 
     socket.on("leaveRoom", (room) => {
-        if(rooms[room]){
-            console.log(rooms[room])
-            console.log(socket.id)
-            console.log(rooms[room].indexOf(socket.id))
-            rooms[room].splice(rooms[room].indexOf(socket.id),1);
-            if(rooms[room].length === 0){
-                delete rooms[room];
-            }else{
-                rooms[room].forEach(socketId => {
-                    io.to(socketId).emit("thisPeerLeft", socket.id);
-                });
-            }
-        }
+        // if(rooms[room]){
+        //     rooms[room].splice(rooms[room].indexOf(socket.id),1);
+        //     if(rooms[room].length === 0){
+        //         delete rooms[room];
+        //     }else{
+        //         rooms[room].forEach(socketId => {
+        //             io.to(socketId).emit("thisPeerLeft", socket.id);
+        //         });
+        //     }
+        // }
         
     });
 
@@ -80,9 +79,17 @@ io.on("connection", (socket) => {
     });
     
     socket.on("disconnect", () => {
-        delete peers[socket.id];
-       // io.sockets.emit("peers",peers);
-        
+        for(const room in rooms){
+            rooms[room].splice(rooms[room].indexOf(socket.id),1);
+            if(rooms[room].length === 0){
+                delete rooms[room];
+            }else{
+                rooms[room].forEach(socketId => {
+                    io.to(socketId).emit("thisPeerLeft", socket.id);
+                });
+            }
+        }
+        delete peers[socket.id];       
     });
 });
 

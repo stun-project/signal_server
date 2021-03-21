@@ -27,11 +27,16 @@ io.on("connection", (socket) => {
     });
     
     socket.on("offer", (message) => {
+        console.log(message)
         io.to(message.id).emit("offer", message);
     });
 
     socket.on("candidate", (message) => {
         io.to(message.id).emit("candidate", message);
+    });
+    
+    socket.on("answer", message => {
+        io.to(message.id).emit("answer", message);
     });
 
     socket.on("createRoom", (roomId) => {
@@ -74,9 +79,7 @@ io.on("connection", (socket) => {
     });
 
 
-    socket.on("answer", message => {
-        io.to(message.id).emit("answer", message);
-    });
+    
     
     socket.on("disconnect", () => {
         for(const room in rooms){

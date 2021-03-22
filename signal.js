@@ -35,8 +35,6 @@ io.on("connection", (socket) => {
     });
     
     socket.on("answer", message => {
-        console.log("ans kjører");
-        console.log(message);
         io.to(message.id).emit("answer", message);
     });
 

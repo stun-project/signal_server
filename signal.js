@@ -8,16 +8,16 @@ const io = require('socket.io')(server,{
         origin:'*'
     }
 });
-const port = 8000;
 
+const port = 8000;
 const peers = {};
 const rooms = {};
+const gamePeersWaiting = {};
 
 
 
 
 io.on("connection", (socket) => {
-    //console.log("on connection: " + socket.id);
     socket.on("my_name_is", () =>{
         if(!peers[socket.id]){
             peers[socket.id] = socket.id;
@@ -76,9 +76,6 @@ io.on("connection", (socket) => {
         // }
         
     });
-
-
-    
     
     socket.on("disconnect", () => {
         for(const room in rooms){
@@ -92,6 +89,23 @@ io.on("connection", (socket) => {
             }
         }
         delete peers[socket.id];       
+    });
+
+
+    // FOR PONG:
+
+    socket.on("awaitingGame", () => {
+        if(!gamePeersWaiting[socket.id]){
+            gamePeersWaiting[socket.id] = socket.id;
+        }
+        socket.emit("you",socket.id);
+        if(Object.keys(gamePeersWaiting).length >= 2){
+            //Sender ut ideen til den som har venta lengst
+            socket.emit("gamePartnerId",gamePeersWaiting[Object.keys(gamePeersWaiting)[0]]);
+        }
+        else{
+            socket.emit("waitForPartner");
+        }
     });
 });
 

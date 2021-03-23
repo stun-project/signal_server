@@ -18,6 +18,8 @@ const gamePeersWaiting = {};
 
 
 io.on("connection", (socket) => {
+    let player = false;
+
     socket.on("my_name_is", () =>{
         if(!peers[socket.id]){
             peers[socket.id] = socket.id;
@@ -88,13 +90,21 @@ io.on("connection", (socket) => {
                 });
             }
         }
-        delete peers[socket.id];       
+        delete peers[socket.id];    
+        
+        if(player){
+            delete gamePeersWaiting[socket.id];
+        }
     });
+
 
 
     // FOR PONG:
 
+    //må også slette fra ventelista når man joiner et spill
+
     socket.on("awaitingGame", () => {
+        player = true;
         if(!gamePeersWaiting[socket.id]){
             gamePeersWaiting[socket.id] = socket.id;
         }

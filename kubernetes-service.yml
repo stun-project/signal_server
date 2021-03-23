@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: signalserver
+spec:
+  selector:
+    app: signalserver
+  ports:
+    - port: 8000
+      protocol: TCP
+      targetPort: 8000

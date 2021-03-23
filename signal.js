@@ -29,6 +29,8 @@ io.on("connection", (socket) => {
     });
     
     socket.on("offer", (message) => {
+        console.log("offer:")
+        console.log(message)
         io.to(message.id).emit("offer", message);
     });
 
@@ -37,6 +39,9 @@ io.on("connection", (socket) => {
     });
     
     socket.on("answer", message => {
+        console.log("answer:")
+        console.log(message)
+        
         io.to(message.id).emit("answer", message);
     });
 
@@ -101,13 +106,17 @@ io.on("connection", (socket) => {
 
     // FOR PONG:
 
-    //må også slette fra ventelista når man joiner et spill
+    //må også slette fra ventelista når man joiner et spill!
 
     socket.on("awaitingGame", () => {
         player = true;
         if(!gamePeersWaiting[socket.id]){
             gamePeersWaiting[socket.id] = socket.id;
         }
+        //trenger jeg å lagre alle som er inni siden??
+        // if(!peers[socket.id]){
+        //     peers[socket.id] = socket.id;
+        // }
         socket.emit("you",socket.id);
         if(Object.keys(gamePeersWaiting).length >= 2){
             //Sender ut ideen til den som har venta lengst
@@ -117,6 +126,12 @@ io.on("connection", (socket) => {
             socket.emit("waitForPartner");
         }
     });
+
+    socket.on("gameOffer", (message) => {
+        io.to(message.id).emit("gameOffer", message);
+    });
+
+
 });
 
 
